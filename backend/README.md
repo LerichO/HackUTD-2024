@@ -11,11 +11,11 @@ $ venv\Scripts\activate
 Install dependencies from the `requirements.txt` file
 
 ```
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 
 Run the Flask app with 
 
 ```
-py -m app
+$ py -m app
 ```
