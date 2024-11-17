@@ -5,7 +5,6 @@ import {
   Button,
   Text,
   TextInput,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -103,6 +102,7 @@ const ChatbotPage: React.FC = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -112,8 +112,8 @@ const ChatbotPage: React.FC = () => {
         </View>
       </View>
 
-      {/* Chat Scrollable Section */}
-      <ScrollView contentContainerStyle={styles.chatContainer}>
+      {/* Chat Section */}
+      <View style={styles.chatContainer}>
         <GiftedChat
           messages={messages}
           renderBubble={renderBubble}
@@ -122,8 +122,15 @@ const ChatbotPage: React.FC = () => {
           }}
           showUserAvatar={false}
           renderInputToolbar={() => null} // Disable GiftedChat's default input toolbar
+          inverted={true}
+          maxComposerHeight={200}
+          listViewProps={{
+            style: { flex: 1 },
+            contentContainerStyle: { flexGrow: 1 },
+            scrollEventThrottle: 400,
+          }}
         />
-      </ScrollView>
+      </View>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -132,6 +139,7 @@ const ChatbotPage: React.FC = () => {
           placeholder="Type your message..."
           value={inputText}
           onChangeText={setInputText}
+          onSubmitEditing={onSend}
         />
         <View style={styles.sendButtonContainer}>
           <Button title="Send" onPress={onSend} color="#fff" />
@@ -169,7 +177,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   chatContainer: {
-    flexGrow: 1,
+    flex: 1,
     paddingBottom: 10,
   },
   footer: {
@@ -177,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingTop: 20,
-    paddingBottom: 90,
+    paddingBottom: Platform.OS === 'ios' ? 90 : 20,
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     backgroundColor: '#f9f9f9',
