@@ -61,7 +61,8 @@ def send_chat():
         print(e)
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/stocks/all/<symbol>')
+# get method is a POST requestt bc idk, GET can't handle request bodies
+@app.route('/api/stocks/all/<symbol>/', methods=['POST'])
 def get_stock_data(symbol):
     try:
         # Get window parameters from request body
