@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Image, StyleSheet, Dimensions} from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
+import { Audio } from 'expo-av';
 import { Stack, router } from 'expo-router';
 import tw from 'twrnc';
 import CustomLoadingIndicator from './CustomLoadingIndicator';
@@ -9,13 +10,42 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export default function Welcome() {
   const [isLoading, setIsLoading] = useState(true);
   const [showContent, setShowContent] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
 
-  // Add Stack.Screen to hide the header
+  const playSnortingSound = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('../assets/sounds/pig-oink.mp3') // Ensure this path is correct
+      );
+      setSound(sound); // Save the sound instance
+      await sound.playAsync(); // Play the sound
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error playing sound:', error.message); // Log the error message
+      } else {
+        console.error('Unknown error occurred while playing sound:', error); // Handle unknown errors
+      }
+    }
+  };
+  
+
+  // Cleanup sound instance on unmount
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync(); // Release the sound resource
+      }
+    };
+  }, [sound]);
+
+  // Manage loading and sound playback
   useEffect(() => {
     const loadingTimeout = setTimeout(() => {
       setIsLoading(false);
+      playSnortingSound(); // Play sound when loading completes
     }, 3000);
-    return () => clearTimeout(loadingTimeout);
+
+    return () => clearTimeout(loadingTimeout); // Clear timeout on unmount
   }, []);
 
   const handleLoadingComplete = () => {
