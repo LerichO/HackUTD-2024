@@ -77,7 +77,7 @@ export default function Home() {
         style={tw`flex-1`}
         contentContainerStyle={tw`pb-40`}
         showsVerticalScrollIndicator={true}
-      >    
+>    
         <View style={[tw``, { backgroundColor: '#8AC8D0' }]}>
           <Text style={[tw`text-4xl font-bold text-center mt-8`, { color: '#ffffff' }]}>
             BRIDGE
