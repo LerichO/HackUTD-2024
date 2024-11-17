@@ -1,3 +1,4 @@
+import { router, Stack } from "expo-router";
 import React from "react";
 import {
   View,
@@ -7,24 +8,41 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
+import tw from 'twrnc';
 
 const logo = require("../assets/images/FundeeIcon.png");
 const logo2 = require("../assets/images/Google.png");
+
+const handleLogin = () => {
+    router.push('/(tabs)/home');
+};
+
 const SignUpPage: React.FC = () => {
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      <TouchableOpacity 
+        style={tw`absolute top-12 left-4`}
+        onPress={() => router.back()}
+      >
+        <Text style={tw`text-3xl`}>←</Text>
+      </TouchableOpacity>
+
       <Text style={styles.headerTitle}>Bridge</Text>
-      {/* Add Logo */}
       <Image source={logo} style={styles.logo} />
       <View style={styles.formContainer}>
         <Text style={styles.title}>Login</Text>
         <TextInput style={styles.input} placeholder="Username" />
         <TextInput style={styles.input} placeholder="Password" secureTextEntry />
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Sign-Up</Text>
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={handleLogin}
+        >
+          <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.googleButton}>
-        <Image source={logo2} style={styles.logo2} />
+          <Image source={logo2} style={styles.logo2} />
           <Text style={styles.googleButtonText}>Sign in with Google</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
@@ -36,35 +54,33 @@ const SignUpPage: React.FC = () => {
   );
 };
 
-export default SignUpPage;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
-    paddingTop: 35, // Adjust for spacing
+    paddingTop: 35,
   },
   headerTitle: {
     fontSize: 50,
     fontWeight: "bold",
     color: "#000",
     textAlign: "center",
-    marginBottom: 10, // Centered text
+    marginBottom: 10,
   },
   logo: {
-    width: 190, // Adjust width to fit the design
-    height: 150, // Adjust height to fit the design
+    width: 190,
+    height: 150,
   },
   logo2: {
-    width: 30, // Adjust width to fit the design
-    height: 30, // Adjust height to fit the design
+    width: 30,
+    height: 30,
     marginRight: 10,
   },
   formContainer: {
     backgroundColor: "#A8DADC",
     width: "100%",
-    height: "80%", // Adjust width to make it more compact
+    height: "80%",
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
@@ -80,8 +96,8 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 10,
     borderWidth: 1,
-    borderColor: "#FFF", // Matches the design
-    borderRadius: 30, // Rounded corners
+    borderColor: "#FFF",
+    borderRadius: 30,
     backgroundColor: "#FFF",
     color: "#000",
   },
@@ -105,7 +121,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#CCC",
     padding: 15,
-    borderRadius: 30, // Rounded corners
+    borderRadius: 30,
     width: "85%",
     justifyContent: "center",
     marginVertical: 10,
@@ -126,3 +142,5 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
+
+export default SignUpPage;
