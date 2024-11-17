@@ -106,10 +106,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#8AC8D0',
   },
   title: {
-    fontSize: 24,
+    fontSize: 34,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    marginTop:10,
+    color:'#fff',
   },
   inputContainer: {
     marginBottom: 15,

@@ -262,11 +262,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#8AC8D0',
   },
   header: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 20,
     marginTop: 30,
     textAlign: 'center',
+    color: '#fff',
   },
   subHeader: {
     fontSize: 18,
