@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, SafeAreaView, ScrollView, Dimensions, ActivityIndicator, FlatList } from 'react-native';
 import tw from 'twrnc';
 import { Dropdown } from 'react-native-element-dropdown';
 import { LineChart } from 'react-native-chart-kit';
 import { useFonts } from 'expo-font';
+import SavingsFeature from '../savingsfeature';
 
 export default function Home() {
   const [value, setValue] = useState<string>('1');
@@ -100,6 +101,45 @@ export default function Home() {
     };
   };
 
+  const renderGraphItem = ({ item }: { item: [string, any] }) => {
+    const [symbol, graph] = item;
+    return (
+      <View style={tw`mx-4`}>
+        <Text style={tw`text-lg font-bold text-center`}>
+          {symbol} Stock Price
+        </Text>
+        {graph.length ? (
+          <LineChart
+            data={formatGraphData(graph)}
+            width={screenWidth * 0.8} // Adjust the graph width to fit the horizontal layout
+            height={220}
+            chartConfig={{
+              backgroundGradientFrom: '#ffffff',
+              backgroundGradientTo: '#f7f7f7',
+              color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              strokeWidth: 2,
+              propsForDots: {
+                r: '4',
+                strokeWidth: '2',
+                stroke: '#ffa726',
+              },
+            }}
+            bezier
+            style={{
+              marginVertical: 8,
+              borderRadius: 16,
+            }}
+          />
+        ) : (
+          <Text style={tw`text-sm text-center text-red-500`}>
+            No data available for {symbol}.
+          </Text>
+        )}
+      </View>
+    );
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -164,48 +204,30 @@ export default function Home() {
           )}
         </View>
 
-        {/* Graph Data */}
+        {/* Graph Data in Horizontal Recycler View */}
         <View style={tw`w-full my-8`}>
           {isLoadingGraphs ? (
             <ActivityIndicator size="large" color="#0000ff" />
           ) : (
-            Object.entries(graphData).map(([symbol, graph]: any) => (
-              <View key={symbol} style={tw`my-4`}>
-                <Text style={tw`text-lg font-bold text-center`}>
-                  {symbol} Stock Price
-                </Text>
-                {graph.length ? (
-                  <LineChart
-                    data={formatGraphData(graph)}
-                    width={screenWidth * 0.9}
-                    height={220}
-                    chartConfig={{
-                      backgroundGradientFrom: '#ffffff',
-                      backgroundGradientTo: '#f7f7f7',
-                      color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
-                      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                      strokeWidth: 2,
-                      propsForDots: {
-                        r: '4',
-                        strokeWidth: '2',
-                        stroke: '#ffa726',
-                      },
-                    }}
-                    bezier
-                    style={{
-                      marginVertical: 8,
-                      borderRadius: 16,
-                    }}
-                  />
-                ) : (
-                  <Text style={tw`text-sm text-center text-red-500`}>
-                    No data available for {symbol}.
-                  </Text>
-                )}
-              </View>
-            ))
+            <FlatList
+              data={Object.entries(graphData)}
+              renderItem={renderGraphItem}
+              keyExtractor={(item) => item[0]}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={tw`px-4`}
+            />
           )}
         </View>
+        {/* Savings Feature */}
+        <SavingsFeature
+          width={200}
+          height={200}
+          initialSavings={0}
+          onSavingsUpdate={(amount) => {
+            console.log('New savings amount:', amount);
+          }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
