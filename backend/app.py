@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, Response, make_response
 from flask_cors import CORS
 from pymongo import MongoClient
-from pymongo.errors import DuplicateKeyError, PyMongoError
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -62,7 +61,7 @@ def send_chat():
         print(e)
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/stocks/<symbol>')
+@app.route('/api/stocks/all/<symbol>')
 def get_stock_data(symbol):
     try:
         # Get window parameters from request body
@@ -125,7 +124,7 @@ def get_stock_data(symbol):
             'message': str(e)
         }), 400
 
-@app.route('/api/stocks/')
+@app.route('/api/stocks/all/')
 def get_top_performers():
     try:
         # Get list of major US tickers
@@ -172,7 +171,156 @@ def get_top_performers():
             'status': 'error',
             'message': str(e)
         }), 400
+    
+@app.route('/api/stocks/low-risk')
+def get_top_funds():
+    try:
+        # Get list of funds and bonds
+        ticker_dict = get_major_fund_tickers()
+        all_tickers = ticker_dict['Mutual Funds'] + ticker_dict['Bond Funds']
+        
+        # Fetch data for all funds in parallel
+        performances = []
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_symbol = {executor.submit(get_fund_performance, symbol): symbol 
+                              for symbol in all_tickers}
+            
+            for future in as_completed(future_to_symbol):
+                result = future.result()
+                if result is not None:
+                    performances.append(result)
+        
+        # Sort by yearly return to get the top performers
+        top_performers = sorted(performances, 
+                              key=lambda x: x['returns']['yearly'], 
+                              reverse=True)[:5]
+        
+        # Add rank to each fund
+        for i, fund in enumerate(top_performers, 1):
+            fund['rank'] = i
+        
+        # Create summary statistics
+        summary = {
+            'total_assets_analyzed_billions': convert_to_native_types(
+                sum(p['total_assets_billions'] for p in performances)
+            ),
+            'average_returns': {
+                'monthly': convert_to_native_types(
+                    np.mean([p['returns']['monthly'] for p in performances])
+                ),
+                'quarterly': convert_to_native_types(
+                    np.mean([p['returns']['quarterly'] for p in performances])
+                ),
+                'yearly': convert_to_native_types(
+                    np.mean([p['returns']['yearly'] for p in performances])
+                )
+            },
+            'average_expense_ratio': convert_to_native_types(
+                np.mean([p['expense_ratio'] for p in performances])
+            ),
+            'average_yield': convert_to_native_types(
+                np.mean([p['yield'] for p in performances])
+            ),
+            'average_volatility': convert_to_native_types(
+                np.mean([p['volatility'] for p in performances])
+            ),
+            'funds_analyzed': len(performances),
+            'timestamp': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'category_breakdown': {
+                'Mutual Funds': len([p for p in performances if p['category'] == 'Mutual Fund']),
+                'Bond Funds': len([p for p in performances if p['category'] == 'Bond Fund'])
+            }
+        }
+        
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'top_performers': top_performers,
+                'summary': summary
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 400
 
+def get_major_fund_tickers():
+    """Get list of major mutual funds and bond ETFs"""
+    return {
+        'Mutual Funds': [
+            'VFIAX',  # Vanguard 500 Index Fund
+            'FXAIX',  # Fidelity 500 Index Fund
+            'VTSAX',  # Vanguard Total Stock Market Index Fund
+            'VTSMX',  # Vanguard Total Stock Market Index Fund
+            'PRGFX',  # T. Rowe Price Growth Stock Fund
+            'AGTHX',  # American Funds Growth Fund of America
+            'VWELX',  # Vanguard Wellington Fund
+            'FCNTX',  # Fidelity Contrafund
+            'VWINX',  # Vanguard Wellesley Income Fund
+            'VTHRX',  # Vanguard Target Retirement 2030 Fund
+        ],
+        'Bond Funds': [
+            'AGG',    # iShares Core U.S. Aggregate Bond ETF
+            'BND',    # Vanguard Total Bond Market ETF
+            'LQD',    # iShares iBoxx $ Investment Grade Corporate Bond ETF
+            'TLT',    # iShares 20+ Year Treasury Bond ETF
+            'IEF',    # iShares 7-10 Year Treasury Bond ETF
+            'MUB',    # iShares National Muni Bond ETF
+            'HYG',    # iShares iBoxx $ High Yield Corporate Bond ETF
+            'BNDX',   # Vanguard Total International Bond ETF
+            'VCIT',   # Vanguard Intermediate-Term Corporate Bond ETF
+            'VGLT',   # Vanguard Long-Term Treasury ETF
+        ]
+    }
+
+def get_fund_performance(symbol):
+    """Get performance metrics for a single fund or bond"""
+    try:
+        fund = yf.Ticker(symbol)
+        info = fund.info
+        
+        # Get historical data for different time periods
+        hist_1mo = fund.history(period="1mo")
+        hist_3mo = fund.history(period="3mo")
+        hist_1yr = fund.history(period="1y")
+        
+        if len(hist_1mo) == 0:
+            return None
+        
+        # Calculate returns for different periods
+        current_price = hist_1mo['Close'].iloc[-1]
+        monthly_return = ((current_price - hist_1mo['Close'].iloc[0]) / hist_1mo['Close'].iloc[0]) * 100
+        quarterly_return = ((current_price - hist_3mo['Close'].iloc[0]) / hist_3mo['Close'].iloc[0]) * 100
+        yearly_return = ((current_price - hist_1yr['Close'].iloc[0]) / hist_1yr['Close'].iloc[0]) * 100
+        
+        # Calculate volatility (standard deviation of returns)
+        volatility = np.std(hist_1yr['Close'].pct_change()) * np.sqrt(252) * 100  # Annualized volatility
+        
+        return {
+            'symbol': symbol,
+            'name': info.get('longName', symbol),
+            'category': 'Bond Fund' if any(bond_keyword in info.get('categoryName', '').lower() 
+                                         for bond_keyword in ['bond', 'fixed income', 'treasury']) 
+                       else 'Mutual Fund',
+            'current_price': convert_to_native_types(current_price),
+            'returns': {
+                'monthly': convert_to_native_types(monthly_return),
+                'quarterly': convert_to_native_types(quarterly_return),
+                'yearly': convert_to_native_types(yearly_return)
+            },
+            'total_assets': convert_to_native_types(info.get('totalAssets', 0)),
+            'total_assets_billions': convert_to_native_types(info.get('totalAssets', 0) / 1e9),
+            'expense_ratio': convert_to_native_types(info.get('annualReportExpenseRatio', 0) * 100),
+            'yield': convert_to_native_types(info.get('yield', 0) * 100 if info.get('yield') else 0),
+            'volatility': convert_to_native_types(volatility),
+            'category_name': info.get('categoryName', 'Unknown'),
+            'investment_strategy': info.get('fundFamily', 'Unknown')
+        }
+    except Exception as e:
+        print(f"Error processing {symbol}: {str(e)}")
+        return None
 
 def get_major_us_tickers():
     """Get list of major US company tickers"""
