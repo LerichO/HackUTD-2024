@@ -209,13 +209,6 @@ def test_new_user():
     db['users'].insert_one({"username": data.get("username"), "password": data.get("password")})
     return 'Success!'
 
-@app.route('/api/login', methods=['POSTS'])
-def login_user():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-
-
 def tokenrequirement(f):
     @wraps(f)
     def decorator(*args,**kwargs):
@@ -234,6 +227,7 @@ def tokenrequirement(f):
         return f(current_user, *args, **kwargs)
     return decorator
 
+# LOGIN IS BROKEN
 @app.route('/api/login', methods=['POST'])
 def login_user():
     data = request.json
@@ -247,7 +241,7 @@ def login_user():
 
     if bcrypt.checkpw(password.encode('utf-8'), existing_user['password']):
         token = jwt.encode({'user_id': str(existing_user['_id']),
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+            'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
         }, app.config['SECRET_KEY'], algorithm='HS256')
 
         return jsonify({'message': 'Login successful', 'token': token}), 200
@@ -268,7 +262,7 @@ def signup():
     user_id = db['users'].insert_one({
         'username': username,
         'password': hash_pass,
-        'created_at': datetime.datetime.utcnow()
+        'created_at': datetime.utcnow()
     }).inserted_id
 
     return jsonify({
