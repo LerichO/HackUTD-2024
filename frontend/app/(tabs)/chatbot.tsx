@@ -81,10 +81,10 @@ const ChatbotPage: React.FC = () => {
       {...props}
       wrapperStyle={{
         left: {
-          backgroundColor: '#4E6766',
+          backgroundColor: '#8AC8D0',
         },
         right: {
-          backgroundColor: '#8AC8D0',
+          backgroundColor: '#4E6766',
         },
       }}
       textStyle={{
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 65,
     paddingBottom: 20,
-    backgroundColor: '#4E6766',
+    backgroundColor: '#8AC8D0',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: 130,
     borderRadius: 20,
-    backgroundColor: '#000',
+    backgroundColor: '#FF8784',
     overflow: 'hidden',
   },
   chatContainer: {
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   sendButtonContainer: {
-    backgroundColor: '#4E6766',
+    backgroundColor: '#8AC8D0',
     borderRadius: 20,
     overflow: 'hidden',
   },
