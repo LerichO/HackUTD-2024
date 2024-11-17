@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 const logo = require("../assets/images/FundeeIcon.png");
+const logo2 = require("../assets/images/Google.png");
 const SignUpPage: React.FC = () => {
   return (
     <View style={styles.container}>
@@ -23,12 +24,7 @@ const SignUpPage: React.FC = () => {
           <Text style={styles.buttonText}>Sign-Up</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.googleButton}>
-          <Image
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png",
-            }}
-            style={styles.googleIcon}
-          />
+        <Image source={logo2} style={styles.logo2} />
           <Text style={styles.googleButtonText}>Sign in with Google</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
@@ -59,6 +55,11 @@ const styles = StyleSheet.create({
   logo: {
     width: 190, // Adjust width to fit the design
     height: 150, // Adjust height to fit the design
+  },
+  logo2: {
+    width: 30, // Adjust width to fit the design
+    height: 30, // Adjust height to fit the design
+    marginRight: 10,
   },
   formContainer: {
     backgroundColor: "#A8DADC",
@@ -108,11 +109,6 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     marginVertical: 10,
-  },
-  googleIcon: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
   },
   googleButtonText: {
     fontSize: 16,
