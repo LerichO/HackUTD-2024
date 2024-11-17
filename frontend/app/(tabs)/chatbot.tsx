@@ -1,4 +1,3 @@
-import { useFonts } from 'expo-font';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -12,13 +11,9 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { GiftedChat, Bubble, IMessage } from 'react-native-gifted-chat';
+import axios from 'axios';
 
 const ChatbotPage: React.FC = () => {
-const [fontsLoaded] = useFonts({
-    'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
-    'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
-  });
-
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [inputText, setInputText] = useState('');
 
@@ -47,7 +42,7 @@ const [fontsLoaded] = useFonts({
   const onSend = useCallback(() => {
     if (inputText.trim() === '') return;
 
-    const newMessage = {
+    const userMessage = {
       _id: Math.random().toString(),
       text: inputText,
       createdAt: new Date(),
@@ -56,57 +51,40 @@ const [fontsLoaded] = useFonts({
       },
     };
 
-    setMessages((previousMessages) => GiftedChat.append(previousMessages, [newMessage]));
+    setMessages((previousMessages) => GiftedChat.append(previousMessages, [userMessage]));
     setInputText(''); // Clear input field
 
-    // Simulate bot response with basic financial queries
-    setTimeout(() => {
-      const responseText = generateFinancialResponse(newMessage.text);
-      setMessages((previousMessages) =>
-        GiftedChat.append(previousMessages, [
-          {
-            _id: Math.random().toString(),
-            text: responseText,
-            createdAt: new Date(),
-            user: {
-              _id: 2,
-              name: 'Chatbot',
-              avatar: '../../assets/images/moneyPig.png',
-            },
+    // Make an API call to fetch the chatbot's response
+    axios
+      .post('https://hackutd-2024-flask-server.onrender.com/api/chat', { message: inputText })
+      .then((response) => {
+        const botMessage = {
+          _id: Math.random().toString(),
+          text: response.data.reply, // Adjust based on API response structure
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: 'Chatbot',
+            avatar: '../../assets/images/moneyPig.png',
           },
-        ])
-      );
-    }, 1000);
+        };
+        setMessages((previousMessages) => GiftedChat.append(previousMessages, [botMessage]));
+      })
+      .catch((error) => {
+        console.error('Error fetching chatbot response:', error);
+        const errorMessage = {
+          _id: Math.random().toString(),
+          text: 'Oops! Something went wrong. Please try again later.',
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: 'Chatbot',
+            avatar: '../../assets/images/moneyPig.png',
+          },
+        };
+        setMessages((previousMessages) => GiftedChat.append(previousMessages, [errorMessage]));
+      });
   }, [inputText]);
-
-  // Function to generate a financial response based on the user's query
-  const generateFinancialResponse = (userQuery: string) => {
-    const query = userQuery.toLowerCase();
-
-    // Hardcoded basic financial responses
-    if (query.includes('loan')) {
-      return 'A loan is money borrowed that is expected to be paid back with interest. The main factors involved are the loan amount, interest rate, and repayment period.';
-    }
-    if (query.includes('interest')) {
-      return 'Interest is the cost of borrowing money, typically expressed as an annual percentage rate (APR). It’s calculated based on the principal amount, the interest rate, and the duration of the loan.';
-    }
-    if (query.includes('compound interest')) {
-      return 'Compound interest is calculated on both the initial principal and the accumulated interest. The formula for compound interest is: A = P(1 + r/n)^(nt), where A is the amount, P is the principal, r is the interest rate, t is the time, and n is the number of compounding periods per year.';
-    }
-    if (query.includes('simple interest')) {
-      return 'Simple interest is calculated using the formula: Interest = Principal × Rate × Time. For example, if you borrow $100 at a 5% interest rate for 3 years, your interest is $15.';
-    }
-    if (query.includes('stock')) {
-      return 'I can’t provide real-time stock prices, but you can check them on any financial news website or use a stock tracking app like Google Finance or Yahoo Finance.';
-    }
-    if (query.includes('budget')) {
-      return 'A budget is a financial plan that helps you allocate income for expenses, savings, and investments. Would you like help creating a budget plan?';
-    }
-    if (query.includes('currency')) {
-      return 'I can’t provide real-time currency conversion rates, but websites like XE.com or apps like Revolut can help you with that.';
-    }
-    return 'I’m sorry, I didn’t understand that. Could you ask a financial question?';
-  };
 
   // Function to clear the chat and start a new conversation
   const clearChat = () => {
@@ -135,9 +113,7 @@ const [fontsLoaded] = useFonts({
       }}
     />
   );
- if (!fontsLoaded) {
-    return null;
-  }
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -149,7 +125,7 @@ const [fontsLoaded] = useFonts({
         <View style={styles.header}>
           <Text style={styles.headerText}>Chatbot</Text>
           <View style={styles.buttonContainer}>
-            <Button title="New Chat" onPress={clearChat} color="#fff"/>
+            <Button title="New Chat" onPress={clearChat} color="#fff" />
           </View>
         </View>
 
@@ -206,13 +182,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#8AC8D0',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    fontFamily: 'Nerko-One'
   },
   headerText: {
-    fontSize: 50,
+    fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',
-    fontFamily: 'Nerko-One'
   },
   buttonContainer: {
     width: 130,
@@ -243,7 +217,6 @@ const styles = StyleSheet.create({
     height: 40,
     marginRight: 10,
     backgroundColor: '#fff',
-    fontFamily: 'Gilroy'
   },
   sendButtonContainer: {
     backgroundColor: '#8AC8D0',
