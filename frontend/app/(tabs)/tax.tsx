@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -11,6 +12,11 @@ import {
 } from 'react-native';
 
 const TaxEstimator = () => {
+  
+  const [fontsLoaded] = useFonts({
+  'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
+  'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
+});
   const [income, setIncome] = useState('');
   const [taxRate, setTaxRate] = useState('');
   const [estimatedTax, setEstimatedTax] = useState<number | null>(null);
@@ -52,48 +58,46 @@ const TaxEstimator = () => {
     Keyboard.dismiss(); // Dismiss the keyboard
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Tax Estimator</Text>
+if (!fontsLoaded) {
+  return null;
+}
 
+ return (
+    <SafeAreaView style={styles.container}>
+      <Text style={[styles.title, { fontFamily: 'Gilroy' }]}>Tax Estimator</Text>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Income ($):</Text>
+        <Text style={[styles.label, { fontFamily: 'Gilroy' }]}>Income ($):</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { fontFamily: 'Gilroy' }]}
           keyboardType="numeric"
           placeholder="Enter your income"
           value={income}
           onChangeText={setIncome}
         />
       </View>
-
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Tax Rate (%):</Text>
+        <Text style={[styles.label, { fontFamily: 'Gilroy' }]}>Tax Rate (%):</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { fontFamily: 'Gilroy' }]}
           keyboardType="numeric"
           placeholder="Enter tax rate"
           value={taxRate}
           onChangeText={setTaxRate}
         />
       </View>
-
       {errorMessage ? (
-        <Text style={styles.errorMessage}>{errorMessage}</Text>
+        <Text style={[styles.errorMessage, { fontFamily: 'Gilroy' }]}>{errorMessage}</Text>
       ) : null}
-
       <TouchableOpacity style={styles.button} onPress={calculateTax}>
-        <Text style={styles.buttonText}>Calculate Tax</Text>
+        <Text style={[styles.buttonText, { fontFamily: 'Gilroy' }]}>Calculate Tax</Text>
       </TouchableOpacity>
-
       {estimatedTax !== null && (
         <View style={styles.resultContainer}>
-          <Text style={styles.resultText}>Estimated Tax: ${estimatedTax.toFixed(2)}</Text>
+          <Text style={[styles.resultText, { fontFamily: 'Gilroy' }]}>Estimated Tax: ${estimatedTax.toFixed(2)}</Text>
         </View>
       )}
-
       <TouchableOpacity style={[styles.button, styles.resetButton]} onPress={resetFields}>
-        <Text style={styles.buttonText}>Reset</Text>
+        <Text style={[styles.buttonText, { fontFamily: 'Gilroy' }]}>Reset</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -112,6 +116,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop:10,
     color:'#fff',
+        fontFamily: 'Nerko-One',
+
   },
   inputContainer: {
     marginBottom: 15,
@@ -120,6 +126,8 @@ const styles = StyleSheet.create({
     fontSize: 23,
     marginBottom: 5,
     textAlign: "center",
+        fontFamily: 'Gilroy',
+
   },
   input: {
     borderWidth: 1,
@@ -128,6 +136,8 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     backgroundColor: '#fff',
+        fontFamily: 'Gilroy',
+
   },
   button: {
     backgroundColor: '#FF8784',
@@ -135,6 +145,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     marginTop: 10,
+        fontFamily: 'Gilroy',
+
   },
   resetButton: {
     backgroundColor: '#4E6766',
@@ -157,12 +169,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#155724',
     textAlign: 'center',
+        fontFamily: 'Gilroy',
+
   },
   errorMessage: {
     color: '#dc3545',
     fontSize: 14,
     marginTop: -5,
     marginBottom: 10,
+        fontFamily: 'Gilroy',
+
   },
 });
 

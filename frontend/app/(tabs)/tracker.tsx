@@ -14,6 +14,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Audio } from 'expo-av'; // Import the Audio module from expo-av
+import { useFonts } from 'expo-font';
 
 interface FinancialEntry {
   id: string;
@@ -28,6 +29,10 @@ const App: React.FC = () => {
   const [category, setCategory] = useState<string>('Uncategorized');
   const [entries, setEntries] = useState<FinancialEntry[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [fontsLoaded] = useFonts({
+  'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
+  'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
+});
 
   const handleAddIncome = async () => {
     if (amount.trim()) {
@@ -158,6 +163,10 @@ const App: React.FC = () => {
     { income: [] as FinancialEntry[], expense: [] as FinancialEntry[] }
   );
 
+  if (!fontsLoaded) {
+  return null;
+}
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -268,11 +277,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
     textAlign: 'center',
     color: '#fff',
+    fontFamily: 'Nerko-One',
   },
   subHeader: {
     fontSize: 18,
     fontWeight: 'bold',
     marginVertical: 10,
+    fontFamily: 'Nerko-One',
   },
   inputContainer: {
     marginBottom: 10,
@@ -284,6 +295,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 20,
     backgroundColor: '#fff',
+    fontFamily: 'Gilroy',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -302,6 +314,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Gilroy',
   },
   item: {
     marginVertical: 8,
@@ -314,14 +327,17 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
     color: '#333',
+    fontFamily: 'Gilroy',
   },
   incomeText: {
     color: 'green',
     fontWeight: 'bold',
+    fontFamily: 'Gilroy',
   },
   expenseText: {
     color: 'red',
     fontWeight: 'bold',
+    fontFamily: 'Gilroy',
   },
   netWorth: {
     marginTop: 20,
@@ -332,6 +348,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     textAlign: 'center',
+    fontFamily: 'Gilroy',
   },
   positiveNetWorth: {
     color: 'green',
@@ -356,15 +373,18 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
+    fontFamily: 'Nerko-One',
   },
   breakdownHeader: {
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 10,
+    fontFamily: 'Nerko-One',
   },
   modalText: {
     fontSize: 16,
     marginVertical: 5,
+    fontFamily: 'Gilroy',
   },
   closeButton: {
     marginTop: 20,
@@ -376,6 +396,7 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'Gilroy',
   },
 });
 

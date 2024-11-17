@@ -4,6 +4,7 @@ import { Audio } from 'expo-av';
 import { Stack, router } from 'expo-router';
 import tw from 'twrnc';
 import CustomLoadingIndicator from './CustomLoadingIndicator';
+import { useFonts } from 'expo-font';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -11,6 +12,10 @@ export default function Welcome() {
   const [isLoading, setIsLoading] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [fontsLoaded] = useFonts({
+  'Nerko-One': require('../assets/fonts/NerkoOne-Regular.ttf'),
+  'Gilroy': require('../assets/fonts/Gilroy-Regular.otf'),
+});
 
   const playSnortingSound = async () => {
     try {
@@ -77,12 +82,17 @@ export default function Welcome() {
     );
   }
 
+  if (!fontsLoaded) {
+  return null;
+}
+
+ 
   return (
     <View style={tw`flex-1`}>
       <Stack.Screen options={{ headerShown: false }} />
       <SafeAreaView style={tw`flex-1`}>
         <View style={[tw`h-[50%]`, { backgroundColor: '#4E6766' }]}>
-          <Text style={[tw`text-5xl font-bold text-center mt-10`, { color: '#000000' }]}>
+          <Text style={[tw`text-5xl font-bold text-center mt-10`, { color: '#000000', fontFamily: 'Nerko-One' }]}>
             BRIDGE
           </Text>
           <Image 
@@ -93,10 +103,10 @@ export default function Welcome() {
         </View>
         <View style={[tw`h-[50%]`, { backgroundColor: '#8AC8D0' }]}>
           <View style={tw`px-6 pt-8 items-center`}>
-            <Text style={[tw`text-2xl font-bold mb-2 text-center`, { color: '#4E6766' }]}>
+            <Text style={[tw`text-2xl font-bold mb-2 text-center`, { color: '#4E6766', fontFamily: 'Nerko-One' }]}>
               Mission:
             </Text>
-            <Text style={[tw`text-lg leading-6 text-center`, { color: '#4E6766' }]}>
+            <Text style={[tw`text-lg leading-6 text-center`, { color: '#4E6766', fontFamily: 'Gilroy' }]}>
               Bridging the gap in financial services by providing accessible, user-friendly banking 
               solutions for everyone. We empower individuals who face barriers to traditional banking, 
               ensuring financial inclusion and prosperity for all communities.
@@ -112,7 +122,7 @@ export default function Welcome() {
                 ]}
                 onPress={handleLogin}
               >
-                <Text style={tw`text-white text-lg font-semibold`}>Login</Text>
+                <Text style={[tw`text-white text-lg font-semibold`, { fontFamily: 'Gilroy' }]}>Login</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[
@@ -121,7 +131,7 @@ export default function Welcome() {
                 ]}
                 onPress={handleSignUp}
               >
-                <Text style={tw`text-white text-lg font-semibold`}>Sign Up</Text>
+                <Text style={[tw`text-white text-lg font-semibold`, { fontFamily: 'Gilroy' }]}>Sign Up</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -13,6 +14,11 @@ import {
 import { GiftedChat, Bubble, IMessage } from 'react-native-gifted-chat';
 
 const ChatbotPage: React.FC = () => {
+const [fontsLoaded] = useFonts({
+    'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
+    'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
+  });
+
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [inputText, setInputText] = useState('');
 
@@ -129,7 +135,9 @@ const ChatbotPage: React.FC = () => {
       }}
     />
   );
-
+ if (!fontsLoaded) {
+    return null;
+  }
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -141,7 +149,7 @@ const ChatbotPage: React.FC = () => {
         <View style={styles.header}>
           <Text style={styles.headerText}>Chatbot</Text>
           <View style={styles.buttonContainer}>
-            <Button title="New Chat" onPress={clearChat} color="#fff" />
+            <Button title="New Chat" onPress={clearChat} color="#fff"/>
           </View>
         </View>
 
@@ -198,11 +206,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#8AC8D0',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    fontFamily: 'Nerko-One'
   },
   headerText: {
-    fontSize: 18,
+    fontSize: 50,
     color: '#fff',
     fontWeight: 'bold',
+    fontFamily: 'Nerko-One'
   },
   buttonContainer: {
     width: 130,
@@ -233,6 +243,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginRight: 10,
     backgroundColor: '#fff',
+    fontFamily: 'Gilroy'
   },
   sendButtonContainer: {
     backgroundColor: '#8AC8D0',

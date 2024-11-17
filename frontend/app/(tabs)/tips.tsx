@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
 
@@ -40,7 +41,15 @@ const tips: Tip[] = [
 ];
 
 const TipsPage: React.FC = () => {
+  const [fontsLoaded] = useFonts({
+    'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
+    'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
+  });
+  
+  
   const [flippedTips, setFlippedTips] = useState<number[]>([]);
+
+
 
   const toggleTip = (id: number) => {
     setFlippedTips((prev) =>
@@ -70,6 +79,7 @@ const TipsPage: React.FC = () => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -85,6 +95,8 @@ const styles = StyleSheet.create({
     marginBottom: 26,
     textAlign: 'center',
     color: '#fff',
+    fontFamily: 'Nerko-One',
+
   },
   tipCard: {
     backgroundColor: '#fff',
@@ -98,18 +110,22 @@ const styles = StyleSheet.create({
     elevation: 3,
     alignItems: 'center',
     justifyContent: 'center',
+    
   },
   tipTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '600',
     color: '#444',
     textAlign: 'center',
+    fontFamily: 'Nerko-One',
   },
   tipDescription: {
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
     textAlign: 'center',
+    fontFamily: 'Gilroy',
+
   },
 });
 
