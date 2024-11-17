@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import React, { useState } from 'react';
 import {
   View,
@@ -32,6 +33,9 @@ const SavingsFeature: React.FC<SavingsFeatureProps> = ({
   const [actionType, setActionType] = useState<'add' | 'withdraw'>('add');
   const [tempGoal, setTempGoal] = useState('');
 
+  const [fontsLoaded] = useFonts({
+    'Gilroy': require('../assets/fonts/Gilroy-Regular.otf'),
+  });
   // Calculate fill percentage
   const fillPercentage = savingsGoal > 0 ? (currentSavings / savingsGoal) * 100 : 0;
   const clampedFillPercentage = Math.min(100, Math.max(0, fillPercentage));
@@ -103,145 +107,153 @@ const SavingsFeature: React.FC<SavingsFeatureProps> = ({
     setShowGoalModal(false);
   };
 
-  return (
-    <View style={tw`items-center`}>
-      {/* Savings Visualization Container */}
-      <View style={[styles.imageContainer, { width, height }]}>
-        {/* Filled pig (clipped) */}
-        <Image
-          source={require('../assets/images/goldenPig.png')}
-          style={[styles.image, { width, height }]}
-          resizeMode="contain"
-        />
-        {/* Mask that covers the unfilled portion */}
-        <View 
-          style={[
-            styles.mask, 
-            { 
-              height: `${100 - clampedFillPercentage}%`,
-              backgroundColor: '#8AC8D0'
-            }
-          ]} 
-        />
-        {/* Transparent overlay pig */}
-        <Image
-          source={require('../assets/images/goldenPig.png')}
-          style={[styles.overlayImage, { 
-            width, 
-            height, 
-            opacity: 0.3,
-          }]}
-          resizeMode="contain"
-        />
-      </View>
+ if (!fontsLoaded) {
+    return null;
+  }
 
-      <View style={tw`mt-4 items-center`}>
-        <Text style={tw`text-lg font-bold`}>Current Savings: ${currentSavings.toFixed(2)}</Text>
-        {savingsGoal > 0 && (
-          <Text style={tw`text-base`}>Goal: ${savingsGoal.toFixed(2)} ({clampedFillPercentage.toFixed(1)}%)</Text>
-        )}
-      </View>
+ return (
+   <View style={tw`items-center`}>
+     {/* Savings Visualization Container */}
+     <View style={[styles.imageContainer, { width, height }]}>
+       {/* Filled pig (clipped) */}
+       <Image
+         source={require('../assets/images/goldenPig.png')}
+         style={[styles.image, { width, height }]}
+         resizeMode="contain"
+       />
+       {/* Mask that covers the unfilled portion */}
+       <View 
+         style={[
+           styles.mask, 
+           { 
+             height: `${100 - clampedFillPercentage}%`,
+             backgroundColor: '#8AC8D0'
+           }
+         ]} 
+       />
+       {/* Transparent overlay pig */}
+       <Image
+         source={require('../assets/images/goldenPig.png')}
+         style={[styles.overlayImage, { 
+           width, 
+           height, 
+           opacity: 0.3,
+         }]}
+         resizeMode="contain"
+       />
+     </View>
 
-      <View style={tw`flex-row mt-4 justify-center gap-2`}>
-        <TouchableOpacity
-          style={[tw`px-4 py-2 rounded-full`, { backgroundColor: '#FF8784' }]}
-          onPress={() => handleActionPress('add')}
-        >
-          <Text style={tw`text-white font-semibold`}>Add Savings</Text>
-        </TouchableOpacity>
+     <View style={tw`mt-4 items-center`}>
+       <Text style={[tw`text-lg font-bold`, { fontFamily: 'Gilroy' }]}>
+         Current Savings: ${currentSavings.toFixed(2)}
+       </Text>
+       {savingsGoal > 0 && (
+         <Text style={[tw`text-base`, { fontFamily: 'Gilroy' }]}>
+           Goal: ${savingsGoal.toFixed(2)} ({clampedFillPercentage.toFixed(1)}%)
+         </Text>
+       )}
+     </View>
 
-        <TouchableOpacity
-          style={[tw`px-4 py-2 rounded-full`, { backgroundColor: '#4E6766' }]}
-          onPress={() => handleActionPress('withdraw')}
-        >
-          <Text style={tw`text-white font-semibold`}>Withdraw</Text>
-        </TouchableOpacity>
+     <View style={tw`flex-row mt-4 justify-center gap-2`}>
+       <TouchableOpacity
+         style={[tw`px-4 py-2 rounded-full`, { backgroundColor: '#FF8784' }]}
+         onPress={() => handleActionPress('add')}
+       >
+         <Text style={[tw`text-white font-semibold`, { fontFamily: 'Gilroy' }]}>Add Savings</Text>
+       </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[tw`px-4 py-2 rounded-full`, { backgroundColor: '#8AC8D0' }]}
-          onPress={() => setShowGoalModal(true)}
-        >
-          <Text style={tw`text-white font-semibold`}>Set Goal</Text>
-        </TouchableOpacity>
-      </View>
+       <TouchableOpacity
+         style={[tw`px-4 py-2 rounded-full`, { backgroundColor: '#FF8784' }]}
+         onPress={() => handleActionPress('withdraw')}
+       >
+         <Text style={[tw`text-white font-semibold`, { fontFamily: 'Gilroy' }]}>Withdraw</Text>
+       </TouchableOpacity>
 
-      {/* Action Modal (Add/Withdraw) */}
-      <Modal
-        visible={showActionModal}
-        transparent
-        animationType="slide"
-      >
-        <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
-          <View style={tw`bg-white p-6 rounded-2xl w-80`}>
-            <Text style={tw`text-xl font-bold mb-4`}>
-              {actionType === 'add' ? 'Add to Savings' : 'Withdraw from Savings'}
-            </Text>
-            <TextInput
-              style={tw`border border-gray-300 rounded-lg p-2 mb-4`}
-              placeholder="Enter amount"
-              keyboardType="numeric"
-              value={inputAmount}
-              onChangeText={setInputAmount}
-            />
-            <View style={tw`flex-row justify-end gap-2`}>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowActionModal(false);
-                  setInputAmount('');
-                }}
-                style={tw`px-4 py-2`}
-              >
-                <Text style={tw`text-gray-600`}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSavingsAction}
-                style={[tw`px-4 py-2 rounded-lg`, { backgroundColor: '#FF8784' }]}
-              >
-                <Text style={tw`text-white font-semibold`}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+       <TouchableOpacity
+         style={[tw`px-4 py-2 rounded-full`, { backgroundColor: '#FF8784' }]}
+         onPress={() => setShowGoalModal(true)}
+       >
+         <Text style={[tw`text-white font-semibold`, { fontFamily: 'Gilroy' }]}>Set Goal</Text>
+       </TouchableOpacity>
+     </View>
 
-      {/* Set Goal Modal */}
-      <Modal
-        visible={showGoalModal}
-        transparent
-        animationType="slide"
-      >
-        <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
-          <View style={tw`bg-white p-6 rounded-2xl w-80`}>
-            <Text style={tw`text-xl font-bold mb-4`}>Set Savings Goal</Text>
-            <TextInput
-              style={tw`border border-gray-300 rounded-lg p-2 mb-4`}
-              placeholder="Enter goal amount"
-              keyboardType="numeric"
-              value={tempGoal}
-              onChangeText={setTempGoal}
-            />
-            <View style={tw`flex-row justify-end gap-2`}>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowGoalModal(false);
-                  setTempGoal('');
-                }}
-                style={tw`px-4 py-2`}
-              >
-                <Text style={tw`text-gray-600`}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSetGoal}
-                style={[tw`px-4 py-2 rounded-lg`, { backgroundColor: '#FF8784' }]}
-              >
-                <Text style={tw`text-white font-semibold`}>Set Goal</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
+     {/* Action Modal (Add/Withdraw) */}
+     <Modal
+       visible={showActionModal}
+       transparent
+       animationType="slide"
+     >
+       <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
+         <View style={tw`bg-white p-6 rounded-2xl w-80`}>
+           <Text style={[tw`text-xl font-bold mb-4`, { fontFamily: 'Gilroy' }]}>
+             {actionType === 'add' ? 'Add to Savings' : 'Withdraw from Savings'}
+           </Text>
+           <TextInput
+             style={[tw`border border-gray-300 rounded-lg p-2 mb-4`, { fontFamily: 'Gilroy' }]}
+             placeholder="Enter amount"
+             keyboardType="numeric"
+             value={inputAmount}
+             onChangeText={setInputAmount}
+           />
+           <View style={tw`flex-row justify-end gap-2`}>
+             <TouchableOpacity
+               onPress={() => {
+                 setShowActionModal(false);
+                 setInputAmount('');
+               }}
+               style={tw`px-4 py-2`}
+             >
+               <Text style={[tw`text-gray-600`, { fontFamily: 'Gilroy' }]}>Cancel</Text>
+             </TouchableOpacity>
+             <TouchableOpacity
+               onPress={handleSavingsAction}
+               style={[tw`px-4 py-2 rounded-lg`, { backgroundColor: '#FF8784' }]}
+             >
+               <Text style={[tw`text-white font-semibold`, { fontFamily: 'Gilroy' }]}>Confirm</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </View>
+     </Modal>
+
+     {/* Set Goal Modal */}
+     <Modal
+       visible={showGoalModal}
+       transparent
+       animationType="slide"
+     >
+       <View style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}>
+         <View style={tw`bg-white p-6 rounded-2xl w-80`}>
+           <Text style={[tw`text-xl font-bold mb-4`, { fontFamily: 'Gilroy' }]}>Set Savings Goal</Text>
+           <TextInput
+             style={[tw`border border-gray-300 rounded-lg p-2 mb-4`, { fontFamily: 'Gilroy' }]}
+             placeholder="Enter goal amount"
+             keyboardType="numeric"
+             value={tempGoal}
+             onChangeText={setTempGoal}
+           />
+           <View style={tw`flex-row justify-end gap-2`}>
+             <TouchableOpacity
+               onPress={() => {
+                 setShowGoalModal(false);
+                 setTempGoal('');
+               }}
+               style={tw`px-4 py-2`}
+             >
+               <Text style={[tw`text-gray-600`, { fontFamily: 'Gilroy' }]}>Cancel</Text>
+             </TouchableOpacity>
+             <TouchableOpacity
+               onPress={handleSetGoal}
+               style={[tw`px-4 py-2 rounded-lg`, { backgroundColor: '#FF8784' }]}
+             >
+               <Text style={[tw`text-white font-semibold`, { fontFamily: 'Gilroy' }]}>Set Goal</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </View>
+     </Modal>
+   </View>
+ );
 };
 
 const styles = StyleSheet.create({

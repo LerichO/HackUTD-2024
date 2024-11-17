@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 import json
 import pprint
 import requests
+from typing import List, Dict
 from datetime import datetime, timedelta
-
 from flask import Flask, request, jsonify, Response, make_response
 from flask_cors import CORS
 from pymongo import MongoClient
@@ -12,6 +12,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from operator import itemgetter
 # from openai import OpenAI
 import cohere
 
@@ -26,6 +27,172 @@ db = mongo_client['test']
 
 # openai_client = OpenAI(api_key=os.environ.get('OPENAI_KEY'))
 cohere_client = cohere.ClientV2(api_key=os.environ.get('COHERE_KEY'))
+
+documents = [
+    {
+        "data": {
+            "title": "Set Clear Financial Goals",
+            "text": "It's important to define short-term and long-term financial goals. This helps you stay focused and track your progress."
+        }
+    },
+    {
+        "data": {
+            "title": "Track Your Spending",
+            "text": "Use an app or spreadsheet to track every dollar spent. This will help you identify areas to save and manage your budget effectively."
+        }
+    },
+    {
+        "data": {
+            "title": "Cut Unnecessary Expenses",
+            "text": "Review your subscriptions and daily expenses to find areas where you can cut back. Every little bit helps!"
+        }
+    },
+    {
+        "data": {
+            "title": "Build an Emergency Fund",
+            "text": "Having a savings cushion for emergencies can help you avoid going into debt when unexpected expenses arise."
+        }
+    },
+    {
+        "data": {
+            "title": "Plan for Big Purchases",
+            "text": "Avoid impulse purchases by planning for major expenses in advance. Set aside money each month towards these purchases."
+        }
+    },
+    {
+        "data": {
+            "title": "Automate Your Savings",
+            "text": "Set up automatic transfers to your savings account. This ensures that you’re consistently saving and makes it easier to stick to your budget."
+        }
+    },
+    {
+        "data": {
+            "title": "Review Your Credit Report",
+            "text": "Check your credit report annually to ensure there are no errors and that your credit score remains healthy for future financial goals."
+        }
+    },
+    {
+        "data": {
+            "title": "Use Cash Envelopes for Discretionary Spending",
+            "text": "Set aside a specific amount of cash for discretionary spending, such as eating out or entertainment, and stick to it."
+        }
+    },
+    {
+        "data": {
+            "title": "Find a Budgeting Method that Works for You",
+            "text": "Try different methods like the 50/30/20 rule, zero-based budgeting, or the envelope system to see which one best fits your lifestyle."
+        }
+    },
+    {
+        "data": {
+            "title": "Cut Back on Luxuries",
+            "text": "Examine your luxury spending habits, like expensive coffee or monthly subscriptions, and try to reduce them to save money."
+        }
+    },
+    {
+        "data": {
+            "title": "Use Coupons and Discounts",
+            "text": "Before making purchases, always look for coupons or discount codes. Over time, this can add up to significant savings."
+        }
+    },
+    {
+        "data": {
+            "title": "Prioritize Debt Repayment",
+            "text": "Focus on paying off high-interest debts first to reduce the overall interest paid, then move on to other debts in order of priority."
+        }
+    },
+    {
+        "data": {
+            "title": "Avoid Lifestyle Inflation",
+            "text": "When you receive a pay raise or bonus, avoid increasing your spending proportionally. Instead, save or invest the extra income."
+        }
+    },
+    {
+        "data": {
+            "title": "Save for Retirement Early",
+            "text": "Start saving for retirement as early as possible. Even small contributions can grow significantly over time with compound interest."
+        }
+    },
+    {
+        "data": {
+            "title": "Shop Smart and Compare Prices",
+            "text": "Before making a purchase, compare prices from different stores or online marketplaces to ensure you’re getting the best deal."
+        }
+    },
+    {
+        "data": {
+            "title": "Set a Realistic Budget",
+            "text": "Ensure that your budget is achievable by setting realistic limits for each category based on your actual income and expenses."
+        }
+    },
+    {
+        "data": {
+            "title": "Limit High-Cost Debt",
+            "text": "Avoid taking on high-interest debt like payday loans or credit card debt. Stick to using credit responsibly and pay off balances quickly."
+        }
+    },
+    {
+        "data": {
+            "title": "Track Your Net Worth",
+            "text": "Regularly calculate your net worth (assets minus liabilities) to assess your financial progress and set future goals."
+        }
+    },
+    {
+        "data": {
+            "title": "Plan for Taxes",
+            "text": "Set aside money throughout the year for taxes, especially if you’re self-employed or earn income outside of a regular paycheck."
+        }
+    },
+    {
+        "data": {
+            "title": "Start an Investment Plan",
+            "text": "Invest your savings in assets like stocks or real estate to grow your wealth over time. Research different investment vehicles that match your risk tolerance."
+        }
+    },
+    {
+        "data": {
+            "title": "Buy Used Instead of New",
+            "text": "Consider purchasing used or refurbished items, such as furniture, electronics, or cars, to save money while still getting quality products."
+        }
+    },
+    {
+        "data": {
+            "title": "Be Mindful of Emotional Spending",
+            "text": "Avoid impulse buying based on emotions, like stress or boredom. Take a moment to assess whether the purchase aligns with your budget."
+        }
+    },
+    {
+        "data": {
+            "title": "Set Aside Money for Fun",
+            "text": "While budgeting is about managing expenses, it’s also important to set aside some money for fun and leisure activities so that budgeting feels less restrictive."
+        }
+    },
+    {
+        "data": {
+            "title": "Evaluate Your Subscriptions Periodically",
+            "text": "Review all your subscriptions (e.g., Netflix, gym memberships) regularly to determine if you still use them or if you can cancel any of them."
+        }
+    },
+    {
+        "data": {
+            "title": "Avoid Going into Debt for Non-Essentials",
+            "text": "Don’t take on debt for things like vacations or non-essential purchases. Save up for these items instead."
+        }
+    },
+    {
+        "data": {
+            "title": "Use a Financial App to Stay on Track",
+            "text": "Download a budgeting app to help you monitor your expenses, set goals, and track your progress toward financial stability."
+        }
+    },
+    {
+        "data": {
+            "title": "Create an Annual Budget Review",
+            "text": "At the end of each year, review your budget and financial goals to assess progress, adjust for changes, and plan for the coming year."
+        }
+    }
+]
+
 
 @app.route('/')
 def home():
@@ -43,23 +210,86 @@ def test_new_user():
 def send_chat():
 
     try:
-        # Get user input from the frontend
         data = request.json
         user_message = data.get('message')
         
+        # Retrieve relevant documents based on user query
+        relevant_docs = retrieve_relevant_documents(
+            query=user_message,
+            documents=documents,
+            client=cohere_client
+        )
+        
+        # Prepare messages for the chat
         messages = [{"role": "user", "content": user_message}]
-
+        
+        # Generate response using retrieved documents
         response = cohere_client.chat(
             model="command-r",
-            messages=messages
+            messages=messages,
+            documents=relevant_docs
         )
-
-        # Send the reply back to the frontend
-        return jsonify({"reply": response.message.content[0].text})
-
+        
+        return jsonify({
+            "reply": response.message.content[0].text,
+            "relevant_documents": relevant_docs  # Optionally return used documents
+        })
+        
     except Exception as e:
-        print(e)
+        print(f"Error in chat endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 500
+    
+def retrieve_relevant_documents(
+    query: str,
+    documents: List[Dict],
+    client: cohere.Client,
+    top_k: int = 3
+) -> List[Dict]:
+    """
+    Retrieve the most relevant documents for a given query using Cohere's rerank capabilities.
+    
+    Args:
+        query: The user's query string
+        documents: List of documents to search through
+        client: Initialized Cohere client
+        top_k: Number of documents to retrieve (default: 3)
+        
+    Returns:
+        List of the most relevant documents
+    """
+    try:
+        # Prepare documents for reranking
+        docs_for_rerank = [
+            {
+                "text": f"{doc['data']['title']}\n{doc['data']['text']}",
+                "index": idx
+            }
+            for idx, doc in enumerate(documents)
+        ]
+        
+        # Rerank documents based on query
+        rerank_response = client.rerank(
+            query=query,
+            documents=[doc["text"] for doc in docs_for_rerank],
+            top_n=top_k,
+            model="rerank-english-v2.0"
+        )
+        
+        # Get original documents in ranked order
+        relevant_docs = []
+        for result in rerank_response.results:
+            original_doc = documents[docs_for_rerank[result.index]["index"]]
+            relevant_doc = {
+                **original_doc,
+                "relevance_score": result.relevance_score
+            }
+            relevant_docs.append(relevant_doc)
+            
+        return relevant_docs
+        
+    except Exception as e:
+        print(f"Error in document retrieval: {str(e)}")
+        return []
 
 # get method is a POST requestt bc idk, GET can't handle request bodies
 @app.route('/api/stocks/all/<symbol>/', methods=['GET'])
