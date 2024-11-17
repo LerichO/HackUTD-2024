@@ -8,6 +8,7 @@ import {
   Animated
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { useFonts } from 'expo-font';
 import tw from 'twrnc';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -30,6 +31,11 @@ type Props = {
 };
 
 const TipsCarouselWithDots = ({ tipsAndGuides, onIndexChange }: Props) => {
+  const [fontsLoaded] = useFonts({
+    'Nerko-One': require('../assets/fonts/NerkoOne-Regular.ttf'),
+    'Gilroy': require('../assets/fonts/Gilroy-Regular.otf'),
+  });
+
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   
@@ -42,6 +48,10 @@ const TipsCarouselWithDots = ({ tipsAndGuides, onIndexChange }: Props) => {
   const viewabilityConfig = {
     viewAreaCoveragePercentThreshold: 50,
   };
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   const renderItem = ({ item, index }: { item: TipItem; index: number }) => {
     const position = Animated.subtract(index * SCREEN_WIDTH, scrollX);
@@ -94,7 +104,11 @@ const TipsCarouselWithDots = ({ tipsAndGuides, onIndexChange }: Props) => {
             <Text 
               style={[
                 tw`text-2xl font-bold mt-1 text-center`,
-                { color: 'white', width: '100%' }
+                { 
+                  color: 'white', 
+                  width: '100%',
+                  fontFamily: 'Nerko-One'  
+                }
               ]}
             >
               {item.title}
@@ -102,7 +116,11 @@ const TipsCarouselWithDots = ({ tipsAndGuides, onIndexChange }: Props) => {
             <Text 
               style={[
                 tw`text-base mb-2 text-center`,
-                { color: 'white', width: '100%' }
+                { 
+                  color: 'white', 
+                  width: '100%',
+                  fontFamily: 'Gilroy'  
+                }
               ]}
             >
               {item.description}

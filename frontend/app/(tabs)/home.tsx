@@ -7,7 +7,7 @@ import SavingsFeature from '../savingsfeature';
 import { useFonts } from 'expo-font';
 
 export default function Home() {
-  const [value, setValue] = useState<string | undefined>(undefined); // Changed null to undefined for the correct type
+const [value, setValue] = useState<string>('1');
 
  const [fontsLoaded] = useFonts({
     'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
@@ -54,19 +54,38 @@ export default function Home() {
   ];
 
   // Bonds tips
-  const bondsTips = [
-    {
-      title: "Treasury Yields",
-      description: "10-Year Treasury Yield Trend",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [{
-          data: [3.5, 3.6, 3.8, 3.7, 3.9, 4.0]
-        }]
-      }
-    },
-    // Add more bonds data if needed...
-  ];
+ const bondsTips = [
+  {
+    title: "Treasury Yields",
+    description: "10-Year Treasury Yield Trend",
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      datasets: [{
+        data: [3.5, 3.6, 3.8, 3.7, 3.9, 4.0]
+      }]
+    }
+  },
+  {
+    title: "Corporate Bond Performance",
+    description: "Investment Grade Corporate Bond Returns",
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      datasets: [{
+        data: [2.8, 3.0, 2.9, 3.2, 3.1, 3.3]
+      }]
+    }
+  },
+  {
+    title: "Municipal Bond Yields",
+    description: "AAA Municipal Bond Yield Curve",
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      datasets: [{
+        data: [2.2, 2.4, 2.3, 2.5, 2.6, 2.7]
+      }]
+    }
+  }
+];
 
   // Function to get current tips based on selected investment
   const getCurrentTips = () => {
