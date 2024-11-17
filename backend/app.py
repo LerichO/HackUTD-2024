@@ -62,13 +62,12 @@ def send_chat():
         return jsonify({"error": str(e)}), 500
 
 # get method is a POST requestt bc idk, GET can't handle request bodies
-@app.route('/api/stocks/all/<symbol>/', methods=['POST'])
+@app.route('/api/stocks/all/<symbol>/', methods=['GET'])
 def get_stock_data(symbol):
     try:
-        # Get window parameters from request body
-        data = request.json
-        window_size = int(data.get('window_size', 6))  # default 6
-        window_unit = data.get('window_unit', 'months')  # default months
+        # Get window parameters from query string
+        window_size = request.args.get('window_size', default=6, type=int)
+        window_unit = request.args.get('window_unit', default='months', type=str)
         
         # Calculate interval based on window size
         interval_str, min_periods = calculate_interval(window_size, window_unit)
