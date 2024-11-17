@@ -12,6 +12,7 @@ from pymongo.errors import DuplicateKeyError, PyMongoError
 import yfinance as yf
 import pandas as pd
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor, as_completed
 # from openai import OpenAI
 import cohere
 
@@ -123,6 +124,129 @@ def get_stock_data(symbol):
             'status': 'error',
             'message': str(e)
         }), 400
+
+@app.route('/api/stocks/')
+def get_top_performers():
+    try:
+        # Get list of major US tickers
+        symbols = get_major_us_tickers()
+        
+        # Fetch data for all stocks in parallel
+        performances = []
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_symbol = {executor.submit(get_stock_performance, symbol): symbol for symbol in symbols}
+            
+            for future in as_completed(future_to_symbol):
+                result = future.result()
+                if result is not None:
+                    performances.append(result)
+        
+        # Sort by market cap to get the absolute largest companies
+        largest_companies = sorted(performances, key=lambda x: x['market_cap'], reverse=True)[:5]
+        
+        # Add rank to each company
+        for i, company in enumerate(largest_companies, 1):
+            company['rank'] = i
+        
+        # Create market summary
+        market_summary = {
+            'total_market_cap_billions': convert_to_native_types(sum(p['market_cap_billions'] for p in largest_companies)),
+            'average_monthly_return': convert_to_native_types(np.mean([p['monthly_return'] for p in largest_companies])),
+            'average_pe_ratio': convert_to_native_types(np.mean([p['pe_ratio'] for p in largest_companies if p['pe_ratio'] is not None])),
+            'companies_analyzed': len(performances),
+            'timestamp': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'represented_sectors': list(set(p['sector'] for p in largest_companies if p['sector'] != 'Unknown')),
+            'total_daily_volume': convert_to_native_types(sum(p['avg_daily_volume'] for p in largest_companies))
+        }
+        
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'top_companies': largest_companies,
+                'market_summary': market_summary
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 400
+
+
+def get_major_us_tickers():
+    """Get list of major US company tickers"""
+    return [
+        # Technology
+        'AAPL',   # Apple
+        'MSFT',   # Microsoft
+        'GOOGL',  # Alphabet (Google)
+        'AMZN',   # Amazon
+        'META',   # Meta Platforms
+        'NVDA',   # NVIDIA
+        'AVGO',   # Broadcom
+        'TSLA',   # Tesla
+        
+        # Financial
+        'BRK-B',  # Berkshire Hathaway
+        'JPM',    # JPMorgan Chase
+        'V',      # Visa
+        'MA',     # Mastercard
+        'BAC',    # Bank of America
+        
+        # Healthcare
+        'LLY',    # Eli Lilly
+        'JNJ',    # Johnson & Johnson
+        'UNH',    # UnitedHealth
+        'ABBV',   # AbbVie
+        'MRK',    # Merck
+        
+        # Consumer
+        'WMT',    # Walmart
+        'PG',     # Procter & Gamble
+        'KO',     # Coca-Cola
+        'PEP',    # PepsiCo
+        'COST',   # Costco
+        'MCD',    # McDonald's
+    ]
+
+def get_stock_performance(symbol):
+    """Get performance metrics for a single stock"""
+    try:
+        stock = yf.Ticker(symbol)
+        info = stock.info
+        
+        # Get recent price data
+        hist = stock.history(period="1mo")
+        
+        if len(hist) == 0:
+            return None
+        
+        # Calculate performance metrics
+        current_price = hist['Close'].iloc[-1]
+        start_price = hist['Close'].iloc[0]
+        monthly_return = ((current_price - start_price) / start_price) * 100
+        
+        # Calculate average daily volume
+        avg_volume = hist['Volume'].mean()
+        
+        return {
+            'symbol': symbol,
+            'name': info.get('longName', symbol),
+            'current_price': convert_to_native_types(current_price),
+            'monthly_return': convert_to_native_types(monthly_return),
+            'market_cap': convert_to_native_types(info.get('marketCap', 0)),
+            'market_cap_billions': convert_to_native_types(info.get('marketCap', 0) / 1e9),
+            'sector': info.get('sector', 'Unknown'),
+            'industry': info.get('industry', 'Unknown'),
+            'exchange': info.get('exchange', 'Unknown'),
+            'avg_daily_volume': convert_to_native_types(avg_volume),
+            'pe_ratio': convert_to_native_types(info.get('forwardPE', None)),
+            'dividend_yield': convert_to_native_types(info.get('dividendYield', 0) * 100 if info.get('dividendYield') else 0)
+        }
+    except Exception as e:
+        print(f"Error processing {symbol}: {str(e)}")
+        return None
 
 def calculate_interval(time_window, unit):
     """
