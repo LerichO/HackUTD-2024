@@ -3,6 +3,8 @@ import { View, Text, SafeAreaView, ScrollView } from 'react-native';
 import tw from 'twrnc';
 import { Dropdown } from 'react-native-element-dropdown';
 import TipsCarouselWithDots from '../carouselwithdots'; // Adjust path as needed
+import SavingsFeature from '../savingsfeature';
+
 
 export default function Home() {
  const [value, setValue] = useState<string | null>(null);
@@ -10,7 +12,6 @@ export default function Home() {
  const data = [
    { label: 'Domestic', value: '1' },
    { label: 'Bonds', value: '2' },
-   { label: 'Foreign', value: '3' },
  ];
 
  // In your Home component
@@ -61,25 +62,12 @@ const bondsTips = [
   // Add more bonds data...
 ];
 
-const foreignTips = [
-  {
-    title: "Global Market Index",
-    description: "MSCI World Index Performance",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      datasets: [{
-        data: [100, 102, 104, 101, 105, 108]
-      }]
-    }
-  },
-  // Add more foreign investment data...
-];
+
  
   const getCurrentTips = () => {
     switch(value) {
       case '1': return domesticTips;
       case '2': return bondsTips;
-      case '3': return foreignTips;
       default: return [];
     }
   };
@@ -129,14 +117,15 @@ const foreignTips = [
           
           
 
-        <View style={[tw` mb-8`, { backgroundColor: '#8AC8D0' }]}>
-          <Text style={[tw`text-4xl font-bold text-center mt-8`, { color: '#000000' }]}>
-            BRIDGE
-          </Text>
-          <Text style={[tw`text-2xl text-center mt-4 mb-4`, {color: '#000000'}]}>
-            Building Paths To Financial Freedom
-          </Text>
-        </View>
+        <SavingsFeature
+  width={200}
+  height={200}
+  initialSavings={0}
+  onSavingsUpdate={(amount) => {
+    // Handle savings updates if needed
+    console.log('New savings amount:', amount);
+  }}
+/>
       </ScrollView>
     </SafeAreaView>
  );
