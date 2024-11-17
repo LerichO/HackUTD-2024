@@ -79,7 +79,7 @@ export default function Home() {
         showsVerticalScrollIndicator={true}
       >    
         <View style={[tw``, { backgroundColor: '#8AC8D0' }]}>
-          <Text style={[tw`text-4xl font-bold text-center mt-8`, { color: '#000000' }]}>
+          <Text style={[tw`text-4xl font-bold text-center mt-8`, { color: '#ffffff' }]}>
             BRIDGE
           </Text>
           <Text style={[tw`text-2xl text-center mt-4 mb-4`, {color: '#000000'}]}>
