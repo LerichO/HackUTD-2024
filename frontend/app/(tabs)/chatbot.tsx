@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Image,
   StyleSheet,
   Button,
   Text,
@@ -22,7 +21,7 @@ const ChatbotPage: React.FC = () => {
     setMessages([
       {
         _id: 1,
-        text: 'Welcome to the chatbot! How can I assist you today?',
+        text: 'Welcome to the financial chatbot! How can I assist you today?',
         createdAt: new Date(),
         user: {
           _id: 2,
@@ -54,13 +53,14 @@ const ChatbotPage: React.FC = () => {
     setMessages((previousMessages) => GiftedChat.append(previousMessages, [newMessage]));
     setInputText(''); // Clear input field
 
-    // Simulate bot response
+    // Simulate bot response with basic financial queries
     setTimeout(() => {
+      const responseText = generateFinancialResponse(newMessage.text);
       setMessages((previousMessages) =>
         GiftedChat.append(previousMessages, [
           {
             _id: Math.random().toString(),
-            text: `You said: "${newMessage.text}". How can I help further?`,
+            text: responseText,
             createdAt: new Date(),
             user: {
               _id: 2,
@@ -72,6 +72,35 @@ const ChatbotPage: React.FC = () => {
       );
     }, 1000);
   }, [inputText]);
+
+  // Function to generate a financial response based on the user's query
+  const generateFinancialResponse = (userQuery: string) => {
+    const query = userQuery.toLowerCase();
+
+    // Hardcoded basic financial responses
+    if (query.includes('loan')) {
+      return 'A loan is money borrowed that is expected to be paid back with interest. The main factors involved are the loan amount, interest rate, and repayment period.';
+    }
+    if (query.includes('interest')) {
+      return 'Interest is the cost of borrowing money, typically expressed as an annual percentage rate (APR). It’s calculated based on the principal amount, the interest rate, and the duration of the loan.';
+    }
+    if (query.includes('compound interest')) {
+      return 'Compound interest is calculated on both the initial principal and the accumulated interest. The formula for compound interest is: A = P(1 + r/n)^(nt), where A is the amount, P is the principal, r is the interest rate, t is the time, and n is the number of compounding periods per year.';
+    }
+    if (query.includes('simple interest')) {
+      return 'Simple interest is calculated using the formula: Interest = Principal × Rate × Time. For example, if you borrow $100 at a 5% interest rate for 3 years, your interest is $15.';
+    }
+    if (query.includes('stock')) {
+      return 'I can’t provide real-time stock prices, but you can check them on any financial news website or use a stock tracking app like Google Finance or Yahoo Finance.';
+    }
+    if (query.includes('budget')) {
+      return 'A budget is a financial plan that helps you allocate income for expenses, savings, and investments. Would you like help creating a budget plan?';
+    }
+    if (query.includes('currency')) {
+      return 'I can’t provide real-time currency conversion rates, but websites like XE.com or apps like Revolut can help you with that.';
+    }
+    return 'I’m sorry, I didn’t understand that. Could you ask a financial question?';
+  };
 
   // Function to clear the chat and start a new conversation
   const clearChat = () => {
