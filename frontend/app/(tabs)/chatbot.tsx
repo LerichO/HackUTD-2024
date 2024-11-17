@@ -1,12 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
+  Image,
   StyleSheet,
   Button,
   Text,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { GiftedChat, Bubble, IMessage } from 'react-native-gifted-chat';
 
@@ -24,7 +27,7 @@ const ChatbotPage: React.FC = () => {
         user: {
           _id: 2,
           name: 'Chatbot',
-          avatar: 'https://placeimg.com/140/140/any',
+          avatar: '../../assets/images/moneyPig.png',
         },
       },
     ]);
@@ -62,7 +65,7 @@ const ChatbotPage: React.FC = () => {
             user: {
               _id: 2,
               name: 'Chatbot',
-              avatar: 'https://placeimg.com/140/140/any',
+              avatar: '../../assets/images/moneyPig.png',
             },
           },
         ])
@@ -70,7 +73,7 @@ const ChatbotPage: React.FC = () => {
     }, 1000);
   }, [inputText]);
 
-  // Function to clear the chat and start new conversation
+  // Function to clear the chat and start a new conversation
   const clearChat = () => {
     initializeMessages();
   };
@@ -99,53 +102,55 @@ const ChatbotPage: React.FC = () => {
   );
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Chatbot</Text>
-        <View style={styles.buttonContainer}>
-          <Button title="New Chat" onPress={clearChat} color="#fff" />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Chatbot</Text>
+          <View style={styles.buttonContainer}>
+            <Button title="New Chat" onPress={clearChat} color="#fff" />
+          </View>
         </View>
-      </View>
 
-      {/* Chat Section */}
-      <View style={styles.chatContainer}>
-        <GiftedChat
-          messages={messages}
-          renderBubble={renderBubble}
-          user={{
-            _id: 1,
-          }}
-          showUserAvatar={false}
-          renderInputToolbar={() => null} // Disable GiftedChat's default input toolbar
-          inverted={true}
-          maxComposerHeight={200}
-          listViewProps={{
-            style: { flex: 1 },
-            contentContainerStyle: { flexGrow: 1 },
-            scrollEventThrottle: 400,
-          }}
-        />
-      </View>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type your message..."
-          value={inputText}
-          onChangeText={setInputText}
-          onSubmitEditing={onSend}
-        />
-        <View style={styles.sendButtonContainer}>
-          <Button title="Send" onPress={onSend} color="#fff" />
+        {/* Chat Section */}
+        <View style={styles.chatContainer}>
+          <GiftedChat
+            messages={messages}
+            renderBubble={renderBubble}
+            user={{
+              _id: 1,
+            }}
+            showUserAvatar={false}
+            renderInputToolbar={() => null} // Disable GiftedChat's default input toolbar
+            inverted={true}
+            maxComposerHeight={200}
+            listViewProps={{
+              style: { flex: 1 },
+              contentContainerStyle: { flexGrow: 1 },
+              scrollEventThrottle: 400,
+            }}
+          />
         </View>
-      </View>
-    </KeyboardAvoidingView>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type your message..."
+            value={inputText}
+            onChangeText={setInputText}
+            onSubmitEditing={onSend}
+          />
+          <View style={styles.sendButtonContainer}>
+            <Button title="Send" onPress={onSend} color="#fff" />
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -185,7 +190,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingTop: 20,
-    paddingBottom: Platform.OS === 'ios' ? 90 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 95 : 20,
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     backgroundColor: '#f9f9f9',
