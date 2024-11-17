@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
-import { View, Text, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, SafeAreaView, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import tw from 'twrnc';
 import { Dropdown } from 'react-native-element-dropdown';
-import TipsCarouselWithDots from '../carouselwithdots'; // Ensure this path is correct
-import SavingsFeature from '../savingsfeature';
+import { LineChart } from 'react-native-chart-kit';
 import { useFonts } from 'expo-font';
 
 export default function Home() {
-const [value, setValue] = useState<string>('1');
+  const [value, setValue] = useState<string>('1');
+  const [tips, setTips] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [graphData, setGraphData] = useState({});
+  const [isLoadingGraphs, setIsLoadingGraphs] = useState(false);
 
- const [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
     'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
   });
@@ -19,110 +22,114 @@ const [value, setValue] = useState<string>('1');
     { label: 'Bonds', value: '2' },
   ];
 
-  // Domestic tips
-  const domesticTips = [
-    {
-      title: "US Stock Market Performance",
-      description: "S&P 500 Monthly Returns",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [{
-          data: [100, 105, 103, 108, 112, 115]
-        }]
-      }
-    },
-    {
-      title: "401k Growth Projection",
-      description: "Average Account Balance Growth",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [{
-          data: [50000, 52000, 54000, 55500, 57000, 59000]
-        }]
-      }
-    },
-    {
-      title: "Dividend Yields",
-      description: "Average Dividend Percentage",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [{
-          data: [2.5, 2.7, 2.6, 2.8, 2.9, 3.0]
-        }]
-      }
-    }
-  ];
+  const screenWidth = Dimensions.get('window').width;
 
-  // Bonds tips
- const bondsTips = [
-  {
-    title: "Treasury Yields",
-    description: "10-Year Treasury Yield Trend",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      datasets: [{
-        data: [3.5, 3.6, 3.8, 3.7, 3.9, 4.0]
-      }]
-    }
-  },
-  {
-    title: "Corporate Bond Performance",
-    description: "Investment Grade Corporate Bond Returns",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      datasets: [{
-        data: [2.8, 3.0, 2.9, 3.2, 3.1, 3.3]
-      }]
-    }
-  },
-  {
-    title: "Municipal Bond Yields",
-    description: "AAA Municipal Bond Yield Curve",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      datasets: [{
-        data: [2.2, 2.4, 2.3, 2.5, 2.6, 2.7]
-      }]
-    }
-  }
-];
+  // Fetch tips dynamically based on the selected investment type
+  useEffect(() => {
+    const fetchTips = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`https://hackutd-2024-flask-server.onrender.com/api/stocks/all/${value}`);
+        const json = await response.json();
+        setTips(json.tips || []);
+      } catch (error) {
+        console.error('Error fetching tips:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Function to get current tips based on selected investment
-  const getCurrentTips = () => {
-    switch(value) {
-      case '1': return domesticTips;
-      case '2': return bondsTips;
-      default: return [];
+    fetchTips();
+  }, [value]);
+
+  // Fetch graph data for multiple top companies
+  const fetchGraphData = async (symbol: string) => {
+    try {
+      const response = await fetch(`https://hackutd-2024-flask-server.onrender.com/api/stocks/all/${symbol}`);
+      if (response.ok) {
+        const data = await response.json();
+        return (
+          data?.data?.map((entry: any) => ({
+            date: entry.date,
+            close: entry.close,
+          })) || []
+        );
+      } else {
+        console.error(`Graph API Error for ${symbol}: ${response.status}`);
+        return [];
+      }
+    } catch (err) {
+      console.error(`Error fetching graph data for ${symbol}:`, err);
+      return [];
     }
   };
-   if (!fontsLoaded) {
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingGraphs(true);
+      try {
+        const response = await fetch('https://hackutd-2024-flask-server.onrender.com/api/stocks/all');
+        const result = await response.json();
+        const topCompanies = result.data?.top_companies || [];
+
+        const newGraphData: any = {};
+        for (const company of topCompanies) {
+          const graph = await fetchGraphData(company.symbol);
+          newGraphData[company.symbol] = graph;
+        }
+        setGraphData(newGraphData);
+      } catch (err) {
+        console.error('Error fetching graph data:', err);
+      } finally {
+        setIsLoadingGraphs(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const formatGraphData = (data: any) => {
+    return {
+      labels: data.map((entry: any) => entry.date).slice(-5), // Display the last 5 dates
+      datasets: [
+        {
+          data: data.map((entry: any) => entry.close).slice(-5), // Display the last 5 closing prices
+          strokeWidth: 2, // Optional line thickness
+        },
+      ],
+    };
+  };
+
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
     <SafeAreaView style={tw`flex-1 bg-[#8AC8D0]`}>
-      <ScrollView  
+      <ScrollView
         style={tw`flex-1`}
         contentContainerStyle={tw`pb-40`}
         showsVerticalScrollIndicator={true}
-      >    
+      >
         <View style={[tw``, { backgroundColor: '#8AC8D0' }]}>
           <Text style={[
-            tw`text-4xl font-bold text-center mt-8`, 
-            { 
+            tw`text-4xl font-bold text-center mt-8`,
+            {
               color: '#ffffff',
-              fontFamily: 'Nerko-One'
-            }
-          ]}>
+              fontFamily: 'Nerko-One',
+            },
+          ]}
+          >
             BRIDGE
           </Text>
           <Text style={[
-            tw`text-2xl text-center mt-4 mb-4`, 
+            tw`text-2xl text-center mt-4 mb-4`,
             {
               color: '#000000',
-              fontFamily: 'Gilroy'
-            }
-          ]}>
+              fontFamily: 'Gilroy',
+            },
+          ]}
+          >
             Building Paths To Financial Freedom
           </Text>
         </View>
@@ -133,7 +140,7 @@ const [value, setValue] = useState<string>('1');
             <Dropdown
               style={[
                 tw`p-2 bg-white rounded`,
-                { fontFamily: 'Gilroy' }
+                { fontFamily: 'Gilroy' },
               ]}
               placeholderStyle={{ fontFamily: 'Gilroy' }}
               selectedTextStyle={{ fontFamily: 'Gilroy' }}
@@ -143,31 +150,62 @@ const [value, setValue] = useState<string>('1');
               valueField="value"
               placeholder="Select Investment Type"
               value={value}
-              onChange={item => setValue(item.value)}
+              onChange={(item) => setValue(item.value)}
             />
           </View>
-          
-          {value && (
+
+          {loading ? (
+            <Text style={tw`text-center text-lg`}>Loading tips...</Text>
+          ) : (
             <View style={tw`w-full items-center justify-center`}>
-              <TipsCarouselWithDots 
-                tipsAndGuides={getCurrentTips()}
-                onIndexChange={(index) => {
-                  console.log('Current tip index:', index);
-                }}
-              />
+              {/* Replace this with your TipsCarouselWithDots */}
+              <Text>Tips Carousel Placeholder</Text>
             </View>
           )}
         </View>
 
-        {/* Savings Feature */}
-        <SavingsFeature
-          width={200}
-          height={200}
-          initialSavings={0}
-          onSavingsUpdate={(amount) => {
-            console.log('New savings amount:', amount);
-          }}
-        />
+        {/* Graph Data */}
+        <View style={tw`w-full my-8`}>
+          {isLoadingGraphs ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            Object.entries(graphData).map(([symbol, graph]: any) => (
+              <View key={symbol} style={tw`my-4`}>
+                <Text style={tw`text-lg font-bold text-center`}>
+                  {symbol} Stock Price
+                </Text>
+                {graph.length ? (
+                  <LineChart
+                    data={formatGraphData(graph)}
+                    width={screenWidth * 0.9}
+                    height={220}
+                    chartConfig={{
+                      backgroundGradientFrom: '#ffffff',
+                      backgroundGradientTo: '#f7f7f7',
+                      color: (opacity = 1) => `rgba(0, 123, 255, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                      strokeWidth: 2,
+                      propsForDots: {
+                        r: '4',
+                        strokeWidth: '2',
+                        stroke: '#ffa726',
+                      },
+                    }}
+                    bezier
+                    style={{
+                      marginVertical: 8,
+                      borderRadius: 16,
+                    }}
+                  />
+                ) : (
+                  <Text style={tw`text-sm text-center text-red-500`}>
+                    No data available for {symbol}.
+                  </Text>
+                )}
+              </View>
+            ))
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
