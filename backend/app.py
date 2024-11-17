@@ -13,6 +13,9 @@ import pandas as pd
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from operator import itemgetter
+import bcrypt
+import jwt
+from functools import wraps
 # from openai import OpenAI
 import cohere
 
@@ -205,6 +208,73 @@ def test_new_user():
 
     db['users'].insert_one({"username": data.get("username"), "password": data.get("password")})
     return 'Success!'
+
+@app.route('/api/login', methods=['POSTS'])
+def login_user():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+
+def tokenrequirement(f):
+    @wraps(f)
+    def decorator(*args,**kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization']
+
+        if not token:
+            return jsonify({'message':'Token Missing'}), 403
+        try: 
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            currentuser = db['users'].findone({"_id": data['user_id']})
+        except Exception as e:
+            return jsonify({"message": 'Token is invalid'}), 403
+
+        return f(current_user, *args, **kwargs)
+    return decorator
+
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    existing_user = db['users'].find_one({"username": username})
+
+    if not existing_user:
+        return jsonify({'message': 'login is incorrect/not found'}), 400
+
+    if bcrypt.checkpw(password.encode('utf-8'), existing_user['password']):
+        token = jwt.encode({'user_id': str(existing_user['_id']),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+        }, app.config['SECRET_KEY'], algorithm='HS256')
+
+        return jsonify({'message': 'Login successful', 'token': token}), 200
+    else: 
+        return jsonify({'message': 'Login is incorrect'}), 400
+
+@app.route('/api/signUp', methods=['POST'])
+def signup():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    existing_user = db['users'].find_one({"username": username})
+    if existing_user:
+        return jsonify({'message': 'Username already exists'}), 400
+
+    hash_pass = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    user_id = db['users'].insert_one({
+        'username': username,
+        'password': hash_pass,
+        'created_at': datetime.datetime.utcnow()
+    }).inserted_id
+
+    return jsonify({
+        'message': 'New User Created!',
+        'user_id': str(user_id)
+        }), 201
 
 @app.route('/api/chat', methods=['POST'])
 def send_chat():
