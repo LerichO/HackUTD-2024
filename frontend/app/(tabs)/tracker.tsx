@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableFlatList from 'react-native-draggable-flatlist';
+import { Audio } from 'expo-av'; // Import the Audio module from expo-av
 
 interface FinancialEntry {
   id: string;
@@ -28,7 +29,7 @@ const App: React.FC = () => {
   const [entries, setEntries] = useState<FinancialEntry[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  const handleAddIncome = () => {
+  const handleAddIncome = async () => {
     if (amount.trim()) {
       const newEntry: FinancialEntry = {
         id: Math.random().toString(),
@@ -40,6 +41,22 @@ const App: React.FC = () => {
       setEntries([...entries, newEntry]);
       setAmount('');
       setCategory('Uncategorized');
+
+      // Play the cash register sound
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/cash-register-purchase.mp3') // Add your sound file to the assets folder
+        );
+        await sound.playAsync();
+        // Optionally unload the sound after playing
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if (status.isLoaded && status.didJustFinish) {
+            sound.unloadAsync();
+          }
+        });
+      } catch (error) {
+        console.error('Error playing sound', error);
+      }
     }
   };
 
@@ -249,6 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     marginTop: 30,
+    textAlign: 'center',
   },
   subHeader: {
     fontSize: 18,
