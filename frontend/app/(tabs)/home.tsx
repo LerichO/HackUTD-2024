@@ -4,9 +4,15 @@ import tw from 'twrnc';
 import { Dropdown } from 'react-native-element-dropdown';
 import TipsCarouselWithDots from '../carouselwithdots'; // Ensure this path is correct
 import SavingsFeature from '../savingsfeature';
+import { useFonts } from 'expo-font';
 
 export default function Home() {
   const [value, setValue] = useState<string | undefined>(undefined); // Changed null to undefined for the correct type
+
+ const [fontsLoaded] = useFonts({
+    'Nerko-One': require('../../assets/fonts/NerkoOne-Regular.ttf'),
+    'Gilroy': require('../../assets/fonts/Gilroy-Regular.otf'),
+  });
 
   const data = [
     { label: 'Domestic', value: '1' },
@@ -70,6 +76,9 @@ export default function Home() {
       default: return [];
     }
   };
+   if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={tw`flex-1 bg-[#8AC8D0]`}>
@@ -77,12 +86,24 @@ export default function Home() {
         style={tw`flex-1`}
         contentContainerStyle={tw`pb-40`}
         showsVerticalScrollIndicator={true}
->    
+      >    
         <View style={[tw``, { backgroundColor: '#8AC8D0' }]}>
-          <Text style={[tw`text-4xl font-bold text-center mt-8`, { color: '#ffffff' }]}>
+          <Text style={[
+            tw`text-4xl font-bold text-center mt-8`, 
+            { 
+              color: '#ffffff',
+              fontFamily: 'Nerko-One'
+            }
+          ]}>
             BRIDGE
           </Text>
-          <Text style={[tw`text-2xl text-center mt-4 mb-4`, {color: '#000000'}]}>
+          <Text style={[
+            tw`text-2xl text-center mt-4 mb-4`, 
+            {
+              color: '#000000',
+              fontFamily: 'Gilroy'
+            }
+          ]}>
             Building Paths To Financial Freedom
           </Text>
         </View>
@@ -91,7 +112,12 @@ export default function Home() {
         <View style={tw`w-[90%] mx-auto my-8`}>
           <View style={tw`p-4`}>
             <Dropdown
-              style={tw`p-2 bg-white rounded`}
+              style={[
+                tw`p-2 bg-white rounded`,
+                { fontFamily: 'Gilroy' }
+              ]}
+              placeholderStyle={{ fontFamily: 'Gilroy' }}
+              selectedTextStyle={{ fontFamily: 'Gilroy' }}
               data={data}
               maxHeight={300}
               labelField="label"
@@ -101,11 +127,11 @@ export default function Home() {
               onChange={item => setValue(item.value)}
             />
           </View>
-
+          
           {value && (
             <View style={tw`w-full items-center justify-center`}>
               <TipsCarouselWithDots 
-                tipsAndGuides={getCurrentTips()}  // Pass correct tips data
+                tipsAndGuides={getCurrentTips()}
                 onIndexChange={(index) => {
                   console.log('Current tip index:', index);
                 }}
@@ -120,7 +146,6 @@ export default function Home() {
           height={200}
           initialSavings={0}
           onSavingsUpdate={(amount) => {
-            // Handle savings updates if needed
             console.log('New savings amount:', amount);
           }}
         />
